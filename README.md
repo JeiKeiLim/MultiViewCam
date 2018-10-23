@@ -1,4 +1,5 @@
 # MultiViewCam
+<img src="demo.png" alt="Demo" title="Demo" width="388" height="378" /><br />
 
 Getting camera images from multiple RasberryPi zero cameras.
 
