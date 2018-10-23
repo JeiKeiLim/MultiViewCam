@@ -7,8 +7,8 @@ import threading
 from matplotlib import pyplot as plt
 
 # Global Variable
-image_left = numpy.zeros((480, 640, 3), dtype='uint8')
-image_right = numpy.zeros((480, 640, 3), dtype='uint8')
+image_left = numpy.zeros((240, 320, 3), dtype='uint8')
+image_right = numpy.zeros((240, 320, 3), dtype='uint8')
 
 #socket 수신 버퍼를 읽어서 반환하는 함수
 def recvall(sock, count):
@@ -31,19 +31,12 @@ def getFrame(conn, idx=1):
 
 		stringData = recvall(conn, int(length))
 		data = numpy.fromstring(stringData, dtype='uint8')
-		#s.close()
+
 		decimg=cv2.imdecode(data,1)
 		if idx == 1:
 			image_left = decimg
 		else:
 			image_right = decimg
-	#	image_combined = numpy.concatenate((image_left, image_right), axis=1)
-	#	print(idx, end="")
-
-	#	cv2.imshow("SERVER" + str(idx),image_combined)
-	#	in_key = cv2.waitKey(1)
-	#	if(in_key == 'q'):
-	#		break
 
 #수신에 사용될 내 ip와 내 port번호
 TCP_IP = ''
