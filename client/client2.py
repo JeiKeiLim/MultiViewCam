@@ -3,16 +3,24 @@ import socket
 import cv2
 import numpy
 import time
+import threading
 from picamera.array import PiRGBArray
 from picamera import PiCamera
+
+def socket_send(sock, data):
+    if data == None:
+        return
+    sock.send( str(data.shape[0]).ljust(16).encode() );
+    sock.send( data );
 
 #연결할 서버(수신단)의 ip주소와 port번호
 TCP_IP = '192.168.0.7'
 TCP_PORT = 5001
-CAM_WIDTH = 640
-CAM_HEIGHT = 480
+CAM_WIDTH = 320
+CAM_HEIGHT = 240
 
 #송신을 위한 socket 준비
+print("Getting ready for camera ...")
 camera = PiCamera()
 camera.resolution = (CAM_WIDTH, CAM_HEIGHT)
 camera.framerate = 32
@@ -20,14 +28,15 @@ rawCapture = PiRGBArray(camera, size=(CAM_WIDTH, CAM_HEIGHT))
 
 time.sleep(0.1)
 
+print("Connecting to the server ...")
 sock = socket.socket()
 sock.connect((TCP_IP, TCP_PORT))
 print("Socket Connected")
 
-for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-#    sock = socket.socket()
-#    sock.connect((TCP_IP, TCP_PORT))
+t = threading.Thread(target=socket_send, args=(sock, None))
+t.start()
 
+for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     image = frame.array
     rawCapture.truncate(0)
 
@@ -36,15 +45,14 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     result, imgencode = cv2.imencode('.jpg', image, encode_param)
     data = numpy.array(imgencode)
     #stringData = str(data)
-
-#    decimg = cv2.imdecode(data,1)
-#    cv2.imshow('CLIENT', decimg)
-#    cv2.waitKey(1)
+    
+    t.join()
+    t = threading.Thread(target=socket_send, args=(sock, data))
+    t.start()
 
     #String 형태로 변환한 이미지를 socket을 통해서 전송
-    sock.send( str(data.shape[0]).ljust(16).encode() );
-    sock.send( data );
-#    break
+    #sock.send( str(data.shape[0]).ljust(16).encode() );
+    #sock.send( data );
 
 sock.close()
 
