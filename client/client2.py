@@ -29,8 +29,14 @@ rawCapture = PiRGBArray(camera, size=(CAM_WIDTH, CAM_HEIGHT))
 time.sleep(0.1)
 
 print("Connecting to the server ...")
-sock = socket.socket()
-sock.connect((TCP_IP, TCP_PORT))
+while(True):
+    try:
+        sock = socket.socket()
+        sock.connect((TCP_IP, TCP_PORT))
+        break
+    except:
+        continue
+
 print("Socket Connected")
 
 t = threading.Thread(target=socket_send, args=(sock, None))
